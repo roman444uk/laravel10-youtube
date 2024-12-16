@@ -1,0 +1,66 @@
+services:
+
+  php:
+    build:
+      context: ./.docker/php
+      args:
+        - APP_XDEBUG=${APP_XDEBUG}
+    environment:
+      - APP_KEY=$APP_NAME
+      - APP_ENV=$APP_ENV
+      - APP_KEY=$APP_KEY
+      - APP_DEBUG=$APP_DEBUG
+      - APP_NAME=$APP_NAME
+      - APP_XDEBUG=$APP_XDEBUG
+      - APP_URL=$APP_URL
+      - DB_CONNECTION=$DB_CONNECTION
+      - DB_HOST=$DB_HOST
+      - DB_PORT=$DB_PORT
+      - DB_DATABASE=$DB_DATABASE
+      - DB_USERNAME=$DB_USERNAME
+      - DB_PASSWORD=$DB_PASSWORD
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=$MAIL_HOST
+      - MAIL_PORT=$MAIL_PORT
+      - MAIL_USERNAME=$MAIL_USERNAME
+      - MAIL_PASSWORD=$MAIL_PASSWORD
+      - MAIL_ENCRYPTION=$MAIL_ENCRYPTION
+      - MAIL_FROM_ADDRESS=$MAIL_FROM_ADDRESS
+      - MAIL_FROM_NAME=$APP_NAME
+    volumes:
+      - ./www:/var/www
+      - ./www/storage:/var/www/storage
+      - laravel_storage:/var/www/storage
+      - ./.docker/php/logs:/var/log/php
+      - ./.docker/nginx/conf:/etc/nginx/conf.d
+    networks:
+      - app
+    ports:
+      - "6001:6001"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    container_name: youtube_app
+
+  nginx:
+    build:
+      context: ./.docker/nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./.docker/nginx/conf:/etc/nginx/conf.d
+      - ./.docker/nginx/logs:/var/log/nginx
+      - ./www:/var/www
+    depends_on:
+      - php
+    networks:
+      - app
+    container_name: youtube_nginx
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  laravel_storage:
+    driver: local
